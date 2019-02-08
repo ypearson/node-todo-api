@@ -5,7 +5,9 @@ var {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
 var {Todo}     = require('./models/todo');
-var {Users}     = require('./models/user');
+var {User}     = require('./models/user');
+
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 
@@ -127,7 +129,7 @@ app.post('/users', (req,res) => {
 
     console.log('/users');
     var body = _.pick(req.body, ['email', 'password']);
-    var user = new Users(body);
+    var user = new User(body);
     user.save().then(() => {
         return user.generateAuthToken();
     }).then((token) => {
@@ -137,11 +139,13 @@ app.post('/users', (req,res) => {
     });
 });
 
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log("listening...");
 });
-
-module.exports={app};
 
 // var newUser = new User({
 //     name:'Bob',
